@@ -1,0 +1,35 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "agentic-setup",
+  "description": "Oliver Jarvis's Claude Code agentic setup: superpowers, caveman, and no-em-dash, bundled into one marketplace.",
+  "owner": {
+    "name": "Oliver Jarvis",
+    "url": "https://github.com/oliverjarvis"
+  },
+  "plugins": [
+    {
+      "name": "superpowers",
+      "description": "Core skills library for Claude Code: TDD, systematic debugging, brainstorming, planning, and collaboration workflows.",
+      "category": "workflow",
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers"
+      }
+    },
+    {
+      "name": "caveman",
+      "description": "Ultra-compressed caveman communication mode. Cuts roughly 75% of tokens while keeping full technical accuracy.",
+      "category": "productivity",
+      "source": {
+        "source": "github",
+        "repo": "juliusbrussee/caveman"
+      }
+    },
+    {
+      "name": "no-em-dash",
+      "description": "Never use em-dashes. Ships an invocable skill plus an always-on SessionStart rule.",
+      "category": "writing",
+      "source": "./plugins/no-em-dash"
+    }
+  ]
+}

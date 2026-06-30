@@ -1,0 +1,26 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "no-em-dash",
+  "description": "Never use em-dashes (U+2014) or en-dashes (U+2013) in any output. Ships an invocable skill plus an always-on SessionStart rule.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Oliver Jarvis",
+    "url": "https://github.com/oliverjarvis"
+  },
+  "license": "MIT",
+  "keywords": ["writing", "style", "punctuation"],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-no-em-dash.sh\"",
+            "timeout": 5,
+            "statusMessage": "Loading no-em-dash rule..."
+          }
+        ]
+      }
+    ]
+  }
+}
