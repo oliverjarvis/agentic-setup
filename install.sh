@@ -26,6 +26,7 @@ PLUGINS=(superpowers caveman no-em-dash)
 
 SCOPE="user"
 WITH_DEEPSEC=0
+WITH_GRAPHIFY=1
 APPLY_SETTINGS=1
 
 # Preferred Claude Code settings, merged (not overwritten) into ~/.claude/settings.json.
@@ -70,6 +71,7 @@ Usage: install.sh [options]
 Options:
   --with-deepsec     Also bootstrap the deepsec security scanner in the current
                      repo (runs 'npx deepsec init'; scans are paid and need API keys).
+  --no-graphify      Do not install graphify (the knowledge-graph skill).
   --no-settings      Do not modify ~/.claude/settings.json.
   --scope <scope>    Install scope for the marketplace and plugins:
                      user (default), project, or local.
@@ -83,6 +85,7 @@ USAGE
 while [ $# -gt 0 ]; do
   case "$1" in
     --with-deepsec) WITH_DEEPSEC=1 ;;
+    --no-graphify)  WITH_GRAPHIFY=0 ;;
     --no-settings)  APPLY_SETTINGS=0 ;;
     --scope)        SCOPE="${2:-}"; [ -n "$SCOPE" ] || die "--scope needs a value"; shift ;;
     -h|--help)      usage; exit 0 ;;
@@ -168,6 +171,40 @@ install_plugins() {
 }
 
 # ----------------------------------------------------------------------------
+# graphify (knowledge-graph skill, external Python CLI)
+# ----------------------------------------------------------------------------
+setup_graphify() {
+  [ "$WITH_GRAPHIFY" -eq 1 ] || { skip "graphify skipped (--no-graphify)"; return; }
+  info "Setting up graphify (knowledge-graph skill)"
+
+  # graphify is a Python CLI (PyPI package 'graphifyy', command 'graphify'), not a
+  # Claude plugin. Install best-effort via uv (preferred), pipx, or pip.
+  if command -v graphify >/dev/null 2>&1; then
+    ok "graphify CLI already installed"
+  elif command -v uv >/dev/null 2>&1; then
+    uv tool install graphifyy >/dev/null 2>&1 && ok "installed graphifyy (uv)" || { warn "uv tool install graphifyy failed; skipping graphify"; return; }
+    uv tool update-shell >/dev/null 2>&1 || true
+  elif command -v pipx >/dev/null 2>&1; then
+    pipx install graphifyy >/dev/null 2>&1 && ok "installed graphifyy (pipx)" || { warn "pipx install graphifyy failed; skipping graphify"; return; }
+    pipx ensurepath >/dev/null 2>&1 || true
+  elif command -v pip3 >/dev/null 2>&1 || command -v pip >/dev/null 2>&1; then
+    local pipcmd; pipcmd="$(command -v pip3 || command -v pip)"
+    "$pipcmd" install --user graphifyy >/dev/null 2>&1 && ok "installed graphifyy (pip)" || { warn "pip install graphifyy failed; skipping graphify"; return; }
+  else
+    warn "no uv/pipx/pip found; skipping graphify."
+    warn "  Install Python 3.10+ and uv, then run: uv tool install graphifyy && graphify install"
+    return
+  fi
+
+  # Register the user-scoped Claude Code skill so /graphify works everywhere.
+  if command -v graphify >/dev/null 2>&1; then
+    graphify install >/dev/null 2>&1 && ok "registered the graphify skill (user scope)" || warn "run 'graphify install' manually to register the skill"
+  else
+    warn "graphify is installed but not on PATH yet. Open a new shell, then run: graphify install"
+  fi
+}
+
+# ----------------------------------------------------------------------------
 # deepsec (optional, per-project)
 # ----------------------------------------------------------------------------
 bootstrap_deepsec() {
@@ -194,7 +231,9 @@ printf '%s\n' "${BOLD}agentic-setup${RESET} ${DIM}(scope: $SCOPE)${RESET}"
 apply_settings
 setup_marketplace
 install_plugins
+setup_graphify
 bootstrap_deepsec
 
 printf '\n%s\n' "${GREEN}${BOLD}Done.${RESET} Restart Claude Code (or run /plugin) to load everything."
+[ "$WITH_GRAPHIFY" -eq 1 ] && printf '%s\n' "${DIM}Tip: in a repo, run /graphify . to build a knowledge graph (graphify-out/).${RESET}"
 [ "$WITH_DEEPSEC" -eq 1 ] || printf '%s\n' "${DIM}Tip: re-run with --with-deepsec inside a repo to add the security scanner.${RESET}"
