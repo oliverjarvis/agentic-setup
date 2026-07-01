@@ -42,6 +42,12 @@
       "description": "Stack-aware testing setup: scaffolds unit/integration/e2e frameworks and sample tests per detected stack, plus screenshot and agent-verify (Playwright MCP) tooling.",
       "category": "workflow",
       "source": "./plugins/stack-tests"
+    },
+    {
+      "name": "pr-review",
+      "description": "Claude-powered PR review: scaffold a security-hardened GitHub Actions review workflow, and a guided loop to address and resolve human reviewer comments.",
+      "category": "workflow",
+      "source": "./plugins/pr-review"
     }
   ]
 }

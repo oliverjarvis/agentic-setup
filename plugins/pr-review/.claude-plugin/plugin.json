@@ -1,0 +1,12 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "pr-review",
+  "description": "Claude-powered PR review: scaffold a security-hardened GitHub Actions review workflow, and a guided loop to address and resolve human reviewer comments.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Oliver Jarvis",
+    "url": "https://github.com/oliverjarvis"
+  },
+  "license": "MIT",
+  "keywords": ["pr", "code-review", "github-actions", "ci"]
+}
