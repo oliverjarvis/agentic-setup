@@ -37,6 +37,27 @@ setup.
 | **caveman** | [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman) | Ultra-compressed "caveman" communication mode. Cuts roughly 75% of tokens while keeping full technical accuracy. |
 | **no-em-dash** | bundled in this repo ([`plugins/no-em-dash`](plugins/no-em-dash)) | Custom plugin. Never use em-dashes (U+2014) or en-dashes (U+2013). Ships an invocable skill plus an always-on SessionStart hook that injects the rule into every session. |
 
+### graphify (knowledge graph)
+
+[graphify](https://github.com/safishamsi/graphify) (PyPI package `graphifyy` with a
+double y, CLI command `graphify`) turns a project into a queryable knowledge graph, so
+the assistant can navigate straight to relevant files instead of grepping the whole
+repo. It is a Python CLI rather than a Claude plugin, so the installer handles it
+best-effort: if `uv`, `pipx`, or `pip` is available it installs `graphifyy` and runs
+`graphify install` to register the user-scoped `/graphify` skill. If no Python tooling
+is found, it is skipped with a hint. Opt out entirely with `--no-graphify`.
+
+Usage once installed:
+
+```bash
+/graphify .              # build graphify-out/ (graph.html, GRAPH_REPORT.md, graph.json)
+graphify claude install  # per project: add a PreToolUse hook so Claude always consults the graph
+```
+
+Requires Python 3.10+ (uv or pipx recommended over pip). Building a graph uses an LLM
+backend: your assistant's own subagents, or a configured backend such as OpenRouter or
+a local Ollama model.
+
 ### deepsec (optional, per project)
 
 [deepsec](https://github.com/vercel-labs/deepsec) is an agent-powered vulnerability
@@ -83,6 +104,7 @@ this with `--no-settings`.
 install.sh [options]
 
 --with-deepsec     Also bootstrap deepsec in the current repo (paid scans, needs API keys).
+--no-graphify      Do not install graphify (the knowledge-graph skill).
 --no-settings      Do not modify ~/.claude/settings.json.
 --scope <scope>    Install scope: user (default), project, or local.
 -h, --help         Show help.
@@ -97,6 +119,9 @@ claude plugin marketplace add oliverjarvis/agentic-setup --scope user
 claude plugin install superpowers@agentic-setup --scope user
 claude plugin install caveman@agentic-setup     --scope user
 claude plugin install no-em-dash@agentic-setup  --scope user
+
+# graphify (knowledge-graph skill), optional:
+uv tool install graphifyy && graphify install
 ```
 
 ## Updating
@@ -124,6 +149,7 @@ See the Claude Code docs on [removing a marketplace](https://code.claude.com/doc
 - [Claude Code](https://code.claude.com/docs) (`claude` CLI)
 - `git` (used to fetch GitHub-sourced plugins)
 - `jq` (for the settings merge; the installer tries to install it via Homebrew or apt if missing)
+- Python 3.10+ with `uv` or `pipx`, for graphify (skipped gracefully if absent; opt out with `--no-graphify`)
 - Node.js 22+ with `npx`, only if you use `--with-deepsec`
 
 ## Repo layout
