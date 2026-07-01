@@ -36,6 +36,12 @@
       "description": "Stack-aware lifecycle hooks: auto-format on edit, dangerous-command and secret-file guards, opt-in stop-time typecheck, and a stack-detecting git-hook installer.",
       "category": "workflow",
       "source": "./plugins/stack-hooks"
+    },
+    {
+      "name": "stack-tests",
+      "description": "Stack-aware testing setup: scaffolds unit/integration/e2e frameworks and sample tests per detected stack, plus screenshot and agent-verify (Playwright MCP) tooling.",
+      "category": "workflow",
+      "source": "./plugins/stack-tests"
     }
   ]
 }

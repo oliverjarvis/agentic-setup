@@ -1,0 +1,12 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "stack-tests",
+  "description": "Stack-aware testing setup: scaffolds unit/integration/e2e frameworks and sample tests per detected stack, plus screenshot and agent-verify (Playwright MCP) tooling.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Oliver Jarvis",
+    "url": "https://github.com/oliverjarvis"
+  },
+  "license": "MIT",
+  "keywords": ["testing", "vitest", "playwright", "pytest", "screenshots"]
+}
