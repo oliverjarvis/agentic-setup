@@ -36,6 +36,11 @@ setup.
 | **superpowers** | [obra/superpowers](https://github.com/obra/superpowers) | Core skills library: TDD, systematic debugging, brainstorming, planning, code review, and collaboration workflows. |
 | **caveman** | [juliusbrussee/caveman](https://github.com/juliusbrussee/caveman) | Ultra-compressed "caveman" communication mode. Cuts roughly 75% of tokens while keeping full technical accuracy. |
 | **no-em-dash** | bundled in this repo ([`plugins/no-em-dash`](plugins/no-em-dash)) | Custom plugin. Never use em-dashes (U+2014) or en-dashes (U+2013). Ships an invocable skill plus an always-on SessionStart hook that injects the rule into every session. |
+| **stack-hooks** | bundled in this repo ([`plugins/stack-hooks`](plugins/stack-hooks)) | Custom plugin. Stack-aware lifecycle hooks: auto-format on edit, dangerous-command and secret-file guards, an opt-in stop-time typecheck, and a `/install-git-hooks` command that scaffolds a stack-aware `.pre-commit-config.yaml`. |
+
+### stack-hooks (lifecycle hooks)
+
+A single plugin whose hook scripts **detect the stack at runtime** (TS, Expo, Convex, Python, Swift, Go, Rust) and dispatch, so it works in any repo without per-stack variants. Agent-time it auto-formats the edited file (Biome/Prettier/Ruff/SwiftFormat), blocks destructive bash and edits to secret files, and (opt-in via `CLAUDE_STACK_HOOKS_VERIFY=1`) typechecks at Stop. Run `/install-git-hooks` in a repo to also generate a stack-aware `.pre-commit-config.yaml` (housekeeping + gitleaks + per-stack lint/format at commit-time, commitlint at commit-msg, typecheck at pre-push). See [`plugins/stack-hooks/README.md`](plugins/stack-hooks/README.md). Requires `jq`; hooks run arbitrary shell with your permissions, so review the scripts.
 
 ### graphify (knowledge graph)
 

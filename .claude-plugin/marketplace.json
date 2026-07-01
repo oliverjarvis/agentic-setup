@@ -30,6 +30,12 @@
       "description": "Never use em-dashes. Ships an invocable skill plus an always-on SessionStart rule.",
       "category": "writing",
       "source": "./plugins/no-em-dash"
+    },
+    {
+      "name": "stack-hooks",
+      "description": "Stack-aware lifecycle hooks: auto-format on edit, dangerous-command and secret-file guards, opt-in stop-time typecheck, and a stack-detecting git-hook installer.",
+      "category": "workflow",
+      "source": "./plugins/stack-hooks"
     }
   ]
 }

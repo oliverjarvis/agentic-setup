@@ -1,0 +1,12 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "stack-hooks",
+  "description": "Stack-aware lifecycle hooks: auto-format on edit, dangerous-command and secret-file guards, opt-in stop-time verification, and a stack-detecting git-hook installer.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Oliver Jarvis",
+    "url": "https://github.com/oliverjarvis"
+  },
+  "license": "MIT",
+  "keywords": ["hooks", "lint", "format", "git-hooks", "security"]
+}
