@@ -38,6 +38,7 @@ setup.
 | **no-em-dash** | bundled in this repo ([`plugins/no-em-dash`](plugins/no-em-dash)) | Custom plugin. Never use em-dashes (U+2014) or en-dashes (U+2013). Ships an invocable skill plus an always-on SessionStart hook that injects the rule into every session. |
 | **stack-hooks** | bundled in this repo ([`plugins/stack-hooks`](plugins/stack-hooks)) | Custom plugin. Stack-aware lifecycle hooks: auto-format on edit, dangerous-command and secret-file guards, an opt-in stop-time typecheck, and a `/install-git-hooks` command that scaffolds a stack-aware `.pre-commit-config.yaml`. |
 | **stack-tests** | bundled in this repo ([`plugins/stack-tests`](plugins/stack-tests)) | Custom plugin. Stack-aware testing: `/scaffold-tests` writes unit/integration/e2e config + sample tests per detected stack (Vitest, convex-test, jest-expo + Maestro, Playwright, pytest, Swift Testing); `/verify-ui` runs the Playwright-MCP / simulator screenshot loop; ships a `testing-setup` skill. |
+| **pr-review** | bundled in this repo ([`plugins/pr-review`](plugins/pr-review)) | Custom plugin. `/setup-pr-review` scaffolds a security-hardened Claude Code review GitHub Actions workflow (same-repo-only, SHA-pinned); `/address-review` reads a PR's human review threads, pushes fixes, and resolves them; ships a `pr-review` skill. |
 
 ### stack-hooks (lifecycle hooks)
 
@@ -46,6 +47,10 @@ A single plugin whose hook scripts **detect the stack at runtime** (TS, Expo, Co
 ### stack-tests (testing setup)
 
 Detects the stack and scaffolds the right test frameworks. Run **`/scaffold-tests`** in a repo: it writes config + a sample test per detected stack (Vitest for TS/Node, convex-test for Convex, jest-expo + a Maestro flow for Expo/RN, Playwright for web e2e, pytest for Python, Swift Testing for Swift), non-destructively, and prints the exact install commands (it never installs on its own). Run **`/verify-ui`** for the agent screenshot/verify loop (Playwright MCP for web, `xcrun simctl`/`adb` capture for mobile). The bundled `testing-setup` skill holds the per-stack rationale. See [`plugins/stack-tests/README.md`](plugins/stack-tests/README.md).
+
+### pr-review (Claude PR review)
+
+Claude-powered pull-request review. Run **`/setup-pr-review`** in a repo to scaffold a security-hardened GitHub Actions workflow (`.github/workflows/claude-code-review.yml`): it triggers on PR open/update, runs the `code-review` plugin via `anthropics/claude-code-action`, uses least-privilege permissions, pins actions to full commit SHAs, and reviews **same-repo PRs only** by default (fork PRs skipped). Run **`/address-review [PR#]`** to read a PR's human review threads, push scoped fixes, and resolve them via `gh`. For your own findings, use `/code-review --fix`. The bundled `pr-review` skill covers auth (API key / OAuth / Bedrock / Vertex) and fork-PR hardening. See [`plugins/pr-review/README.md`](plugins/pr-review/README.md).
 
 ### graphify (knowledge graph)
 

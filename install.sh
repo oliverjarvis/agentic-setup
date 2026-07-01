@@ -22,7 +22,7 @@ set -euo pipefail
 # ----------------------------------------------------------------------------
 MARKETPLACE_REPO="oliverjarvis/agentic-setup"
 MARKETPLACE_NAME="agentic-setup"
-PLUGINS=(superpowers caveman no-em-dash stack-hooks stack-tests)
+PLUGINS=(superpowers caveman no-em-dash stack-hooks stack-tests pr-review)
 
 SCOPE="user"
 WITH_DEEPSEC=0
