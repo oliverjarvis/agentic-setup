@@ -172,12 +172,86 @@ See the Claude Code docs on [removing a marketplace](https://code.claude.com/doc
 ```text
 agentic-setup/
 ├── .claude-plugin/
-│   └── marketplace.json          # the agentic-setup marketplace catalog
+│   └── marketplace.json          # marketplace catalog (lists every plugin)
 ├── plugins/
-│   └── no-em-dash/               # custom plugin, bundled here
-│       ├── .claude-plugin/plugin.json
-│       ├── skills/no-em-dash/SKILL.md
-│       └── hooks/inject-no-em-dash.sh
-├── install.sh                    # the installer
+│   ├── no-em-dash/               # skill + always-on SessionStart rule
+│   ├── stack-hooks/              # lifecycle hooks + git-hook installer
+│   ├── stack-tests/              # test scaffolding + screenshot/verify
+│   └── pr-review/                # hardened CI review + review-comment fix loop
+├── install.sh                    # idempotent installer (marketplace, plugins, settings, graphify, deepsec)
 └── README.md
 ```
+
+## Extending agentic-setup
+
+The system has exactly two moving parts:
+
+1. **The marketplace** (`.claude-plugin/marketplace.json`): a catalog of Claude Code plugins. Each entry is either **bundled** (a `./plugins/<name>` directory in this repo) or **external** (a `github` source pointing at someone else's repo).
+2. **The installer** (`install.sh`): adds the marketplace, installs every plugin in the `PLUGINS=(...)` array, deep-merges settings, and wires in external CLI tools (graphify, deepsec) that are not Claude plugins.
+
+Extending the system means touching one or both. Pick the recipe that matches what you want to add.
+
+### 1. Add a bundled plugin (owned by this repo)
+
+Use this for a new capability you want to author and version here (like `stack-hooks`).
+
+```text
+plugins/<name>/
+├── .claude-plugin/plugin.json    # required: name, description, version
+├── skills/<name>/SKILL.md        # optional: an invocable skill
+├── commands/<name>.md            # optional: a /slash-command
+├── agents/<name>.md              # optional: a subagent
+├── hooks/hooks.json              # optional: lifecycle hooks
+├── scripts/*.sh                  # optional: scripts your components call
+└── .mcp.json                     # optional: bundled MCP server(s)
+```
+
+Then:
+1. Register it in `marketplace.json` under `plugins`: `{ "name": "<name>", "description": "...", "category": "workflow", "source": "./plugins/<name>" }`.
+2. Add `<name>` to `PLUGINS=(...)` in `install.sh` so it installs by default.
+3. Add a row to the **Plugins** table and a short section above.
+4. Validate: `claude plugin validate plugins/<name>` and `claude plugin validate .`.
+
+### 2. Add an external marketplace plugin (someone else's repo)
+
+Use this to bundle a third-party plugin (like `superpowers`, `caveman`). No local files needed:
+
+```jsonc
+// in marketplace.json -> plugins[]
+{ "name": "their-plugin", "source": { "source": "github", "repo": "owner/repo" } }
+```
+
+Then add `their-plugin` to `PLUGINS=(...)` in `install.sh`. Pin a specific commit with `"sha": "<40-char>"` (and/or `"ref": "<tag>"`) inside the source object when you want reproducibility.
+
+### 3. Add an external CLI tool (not a Claude plugin)
+
+Use this for tools installed via npm/pip/etc. that are not plugins (like `graphify`, `deepsec`). In `install.sh`:
+1. Write a `setup_<tool>()` function that installs the tool best-effort (probe `uv`/`pipx`/`pip`/`npx`, degrade to a printed hint if absent).
+2. Add a flag: default-on with a `--no-<tool>` opt-out, or opt-in with `--with-<tool>` (use opt-in for anything slow, paid, or per-project).
+3. Call it in the run sequence near the bottom, and document it in this README.
+
+### 4. Add a component to an existing plugin
+
+- **Skill:** `skills/<name>/SKILL.md` with frontmatter (`name`, `description`). The description is what triggers activation, so make it specific.
+- **Command:** `commands/<name>.md` with frontmatter (`description`, optional `allowed-tools`, `argument-hint`). The body is the prompt; it can run a bundled script via `${CLAUDE_PLUGIN_ROOT}/scripts/<x>.sh` and reference args with `$1`/`$ARGUMENTS`.
+- **Hook:** add an entry to `hooks/hooks.json` (`event -> matcher groups -> command handlers`). Reference bundled scripts with `${CLAUDE_PLUGIN_ROOT}`. Decision semantics: exit `0` (stdout parsed as JSON), exit `2` (block, stderr fed back to Claude), other (non-blocking). PreToolUse gates via `hookSpecificOutput.permissionDecision`; PostToolUse/Stop use top-level `decision: "block"`.
+- **Agent:** `agents/<name>.md`. **MCP server:** `.mcp.json`.
+
+### 5. Add support for a new stack (stack-hooks and stack-tests)
+
+Both plugins detect the stack via a copy of `scripts/detect-stack.sh`, so:
+1. Add a marker-file check + `add <tag>` to **both** `plugins/stack-hooks/scripts/detect-stack.sh` and `plugins/stack-tests/scripts/detect-stack.sh`.
+2. In `stack-hooks`: teach `format-on-edit.sh` the new file extensions, and add a repos/hooks block for the tag in `install-git-hooks.sh`.
+3. In `stack-tests`: add an `if has <tag>` block to `scaffold-tests.sh` (write config + a sample test, append an install command) and a row to the `testing-setup` skill matrix.
+
+### 6. Change the applied settings
+
+Edit the inline `SETTINGS_JSON` heredoc in `install.sh`. It is deep-merged (existing keys win where you do not override) into `~/.claude/settings.json`, with a timestamped backup.
+
+### Conventions
+
+- **No em-dashes** anywhere (enforced by the `no-em-dash` plugin; a repo-wide grep for U+2014/U+2013 should return nothing).
+- **Scripts** are non-destructive (skip existing files, never overwrite), best-effort (a missing tool is a silent no-op, not an error), read the hook payload from stdin with `jq`, and reference bundled files via `${CLAUDE_PLUGIN_ROOT}`.
+- **Validate** before committing: `claude plugin validate .` and `bash -n` on any script.
+- **One PR per change**, and keep the Plugins table, sections, and `PLUGINS=(...)` array in sync.
+
